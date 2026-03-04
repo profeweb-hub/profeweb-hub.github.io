@@ -1,1 +1,663 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Encuesta · Ingeniería del Software</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:   #0D1B2A;
+    --blue:   #1B4F72;
+    --mid:    #2E86C1;
+    --gold:   #D4AC0D;
+    --gold2:  #F0C30F;
+    --white:  #F5F8FA;
+    --offwh:  #EBF2F8;
+    --correct:#1E8449;
+    --wrong:  #C0392B;
+    --muted:  #7F8C8D;
+  }
 
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--navy);
+    min-height: 100vh;
+    color: var(--white);
+    overflow-x: hidden;
+  }
+
+  /* ── Background texture ──────────────────────────── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 10% 20%, #1B4F7230 0%, transparent 60%),
+      radial-gradient(ellipse 60% 80% at 90% 80%, #D4AC0D18 0%, transparent 55%),
+      radial-gradient(ellipse 40% 40% at 50% 50%, #2E86C112 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+
+  /* ── Layout ──────────────────────────────────────── */
+  .shell {
+    position: relative; z-index: 1;
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  /* ── Header ──────────────────────────────────────── */
+  .header {
+    text-align: center;
+    margin-bottom: 52px;
+    animation: fadeDown .6s ease both;
+  }
+  .header .badge {
+    display: inline-block;
+    background: var(--gold);
+    color: var(--navy);
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    padding: 5px 16px;
+    border-radius: 2px;
+    margin-bottom: 18px;
+  }
+  .header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(28px, 5vw, 42px);
+    line-height: 1.15;
+    color: #fff;
+    margin-bottom: 12px;
+  }
+  .header h1 em {
+    font-style: italic;
+    color: var(--gold2);
+  }
+  .header p {
+    font-size: 14px;
+    color: rgba(255,255,255,.55);
+    max-width: 460px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  /* ── Progress bar ────────────────────────────────── */
+  .progress-wrap {
+    margin-bottom: 40px;
+    animation: fadeUp .5s .2s ease both;
+  }
+  .progress-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: rgba(255,255,255,.45);
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  .progress-track {
+    height: 4px;
+    background: rgba(255,255,255,.1);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--gold2));
+    border-radius: 999px;
+    transition: width .5s cubic-bezier(.4,0,.2,1);
+    width: 0%;
+  }
+
+  /* ── Question card ───────────────────────────────── */
+  .q-card {
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 16px;
+    padding: 36px 40px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(8px);
+    animation: fadeUp .5s ease both;
+    transition: border-color .3s;
+  }
+  .q-card.answered { border-color: rgba(255,255,255,.14); }
+
+  .q-num {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 12px;
+  }
+  .q-text {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(16px, 2.5vw, 20px);
+    line-height: 1.45;
+    color: #fff;
+    margin-bottom: 24px;
+  }
+
+  /* ── Options ─────────────────────────────────────── */
+  .options { display: flex; flex-direction: column; gap: 10px; }
+
+  .option {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 14px 18px;
+    border-radius: 10px;
+    border: 1.5px solid rgba(255,255,255,.1);
+    cursor: pointer;
+    transition: all .2s ease;
+    background: rgba(255,255,255,.03);
+    user-select: none;
+  }
+  .option:hover:not(.disabled) {
+    border-color: var(--gold);
+    background: rgba(212,172,13,.08);
+    transform: translateX(4px);
+  }
+  .option.disabled { cursor: default; }
+  .option.selected-correct {
+    border-color: var(--correct);
+    background: rgba(30,132,73,.12);
+  }
+  .option.selected-wrong {
+    border-color: var(--wrong);
+    background: rgba(192,57,43,.12);
+  }
+  .option.reveal-correct {
+    border-color: var(--correct);
+    background: rgba(30,132,73,.08);
+  }
+
+  .opt-letter {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600;
+    flex-shrink: 0;
+    transition: all .2s;
+    color: rgba(255,255,255,.6);
+    margin-top: 1px;
+  }
+  .option:hover:not(.disabled) .opt-letter {
+    border-color: var(--gold);
+    color: var(--gold);
+    background: rgba(212,172,13,.15);
+  }
+  .option.selected-correct .opt-letter {
+    background: var(--correct); border-color: var(--correct); color: #fff;
+  }
+  .option.selected-wrong .opt-letter {
+    background: var(--wrong); border-color: var(--wrong); color: #fff;
+  }
+  .option.reveal-correct .opt-letter {
+    background: var(--correct); border-color: var(--correct); color: #fff;
+  }
+
+  .opt-text {
+    font-size: 14px;
+    line-height: 1.5;
+    color: rgba(255,255,255,.8);
+    padding-top: 5px;
+  }
+
+  /* ── Feedback ────────────────────────────────────── */
+  .feedback {
+    margin-top: 16px;
+    padding: 14px 18px;
+    border-radius: 10px;
+    font-size: 13px;
+    line-height: 1.6;
+    display: none;
+    animation: popIn .35s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  .feedback.show { display: flex; gap: 10px; align-items: flex-start; }
+  .feedback.correct-fb {
+    background: rgba(30,132,73,.15);
+    border: 1px solid rgba(30,132,73,.3);
+    color: #82e0aa;
+  }
+  .feedback.wrong-fb {
+    background: rgba(192,57,43,.15);
+    border: 1px solid rgba(192,57,43,.3);
+    color: #f1948a;
+  }
+  .feedback-icon { font-size: 18px; flex-shrink: 0; line-height: 1; }
+  .feedback strong { display: block; margin-bottom: 3px; font-weight: 600; }
+
+  /* ── Results panel ───────────────────────────────── */
+  .results {
+    display: none;
+    text-align: center;
+    padding: 48px 40px;
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 20px;
+    animation: popIn .5s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  .results.show { display: block; }
+  .score-ring {
+    width: 140px; height: 140px;
+    margin: 0 auto 28px;
+    position: relative;
+  }
+  .score-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .score-ring circle {
+    fill: none;
+    stroke-width: 8;
+    stroke-linecap: round;
+  }
+  .ring-bg   { stroke: rgba(255,255,255,.08); }
+  .ring-fill { stroke: var(--gold); transition: stroke-dashoffset 1s cubic-bezier(.4,0,.2,1); }
+  .score-num {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    font-family: 'DM Serif Display', serif;
+  }
+  .score-big { font-size: 42px; color: #fff; line-height: 1; }
+  .score-of  { font-size: 13px; color: rgba(255,255,255,.4); margin-top: 2px; }
+
+  .results h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 26px;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+  .results .grade-msg {
+    font-size: 14px;
+    color: rgba(255,255,255,.5);
+    margin-bottom: 32px;
+    line-height: 1.6;
+  }
+
+  .result-pills {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 36px;
+    flex-wrap: wrap;
+  }
+  .pill {
+    padding: 8px 18px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .pill-ok  { background: rgba(30,132,73,.2);  border:1px solid rgba(30,132,73,.4); color:#82e0aa; }
+  .pill-err { background: rgba(192,57,43,.2);  border:1px solid rgba(192,57,43,.4); color:#f1948a; }
+
+  .btn-retry {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 14px 32px;
+    background: var(--gold);
+    color: var(--navy);
+    border: none; border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px; font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+    letter-spacing: .3px;
+  }
+  .btn-retry:hover { background: var(--gold2); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(212,172,13,.3); }
+
+  /* ── Animations ──────────────────────────────────── */
+  @keyframes fadeDown { from { opacity:0; transform:translateY(-20px); } to { opacity:1; transform:none; } }
+  @keyframes fadeUp   { from { opacity:0; transform:translateY(20px);  } to { opacity:1; transform:none; } }
+  @keyframes popIn    { from { opacity:0; transform:scale(.92); }        to { opacity:1; transform:scale(1); } }
+
+  /* stagger cards */
+  .q-card:nth-child(1) { animation-delay: .05s; }
+  .q-card:nth-child(2) { animation-delay: .12s; }
+  .q-card:nth-child(3) { animation-delay: .19s; }
+  .q-card:nth-child(4) { animation-delay: .26s; }
+  .q-card:nth-child(5) { animation-delay: .33s; }
+  .q-card:nth-child(6) { animation-delay: .40s; }
+
+  /* ── Submit ──────────────────────────────────────── */
+  .submit-wrap {
+    text-align: center;
+    margin-top: 36px;
+    animation: fadeUp .5s .5s ease both;
+  }
+  .btn-submit {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 16px 40px;
+    background: var(--gold);
+    color: var(--navy);
+    border: none; border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px; font-weight: 700;
+    cursor: pointer;
+    transition: all .25s;
+    opacity: .4; pointer-events: none;
+    letter-spacing: .3px;
+  }
+  .btn-submit.active {
+    opacity: 1; pointer-events: auto;
+  }
+  .btn-submit.active:hover {
+    background: var(--gold2);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(212,172,13,.35);
+  }
+
+  @media (max-width: 600px) {
+    .q-card { padding: 24px 20px; }
+    .shell  { padding: 32px 16px 60px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="badge">ADGG086PO · Sesión 1</div>
+    <h1>Ingeniería del<br><em>Software</em></h1>
+    <p>6 preguntas de selección múltiple. Elige la respuesta correcta en cada pregunta. Solo hay una opción válida por pregunta.</p>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-wrap">
+    <div class="progress-meta">
+      <span id="prog-text">0 de 6 respondidas</span>
+      <span id="prog-pct">0%</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="prog-fill"></div></div>
+  </div>
+
+  <!-- Questions container -->
+  <div id="quiz-container"></div>
+
+  <!-- Submit -->
+  <div class="submit-wrap" id="submit-wrap">
+    <button class="btn-submit" id="btn-submit" onclick="submitQuiz()">
+      Ver resultados &nbsp;→
+    </button>
+  </div>
+
+  <!-- Results -->
+  <div class="results" id="results-panel">
+    <div class="score-ring">
+      <svg viewBox="0 0 100 100">
+        <circle class="ring-bg" cx="50" cy="50" r="42"/>
+        <circle class="ring-fill" id="ring-fill" cx="50" cy="50" r="42"
+          stroke-dasharray="263.9"
+          stroke-dashoffset="263.9"/>
+      </svg>
+      <div class="score-num">
+        <div class="score-big" id="score-big">0</div>
+        <div class="score-of">de 6</div>
+      </div>
+    </div>
+    <h2 id="result-title">Resultado</h2>
+    <p class="grade-msg" id="result-msg"></p>
+    <div class="result-pills" id="result-pills"></div>
+    <button class="btn-retry" onclick="retryQuiz()">↺ &nbsp;Intentar de nuevo</button>
+  </div>
+
+</div>
+
+<script>
+const QUESTIONS = [
+  {
+    id: 1,
+    text: "¿Cuál de las siguientes definiciones describe mejor la Ingeniería del Software según el estándar IEEE 610.12?",
+    options: [
+      "El proceso de escribir código fuente para resolver un problema informático.",
+      "La aplicación de un enfoque sistemático, disciplinado y cuantificable al desarrollo, operación y mantenimiento de software.",
+      "El conjunto de herramientas visuales para diseñar interfaces de usuario.",
+      "La disciplina que estudia los algoritmos y estructuras de datos."
+    ],
+    correct: 1,
+    feedback: {
+      ok: "¡Correcto! La definición oficial del IEEE destaca tres palabras clave: sistemático, disciplinado y cuantificable. Eso es lo que distingue la ingeniería del software de la simple programación.",
+      err: "La definición correcta es la del IEEE (opción B). El énfasis está en el enfoque sistemático y disciplinado, que va mucho más allá de escribir código."
+    }
+  },
+  {
+    id: 2,
+    text: "En 1968 la OTAN convocó una conferencia de urgencia relacionada con el software. ¿Cuál fue la causa principal que motivó esa reunión?",
+    options: [
+      "La falta de programadores cualificados en los países miembros de la OTAN.",
+      "La necesidad de estandarizar los lenguajes de programación a nivel internacional.",
+      "La acumulación de proyectos software que se entregaban tarde, con sobrecostes y sin funcionar correctamente.",
+      "El descubrimiento de vulnerabilidades de seguridad en los sistemas militares."
+    ],
+    correct: 2,
+    feedback: {
+      ok: "¡Exacto! A ese caos se le llamó la «Crisis del Software». Los proyectos fallaban sistemáticamente y se necesitaba aplicar principios de ingeniería al desarrollo.",
+      err: "La respuesta correcta es la C. La conferencia nació de la constatación de que la mayoría de proyectos software eran un desastre: tardaban más, costaban más y hacían menos de lo prometido."
+    }
+  },
+  {
+    id: 3,
+    text: "¿Cuál de los siguientes NO es uno de los cuatro pilares fundamentales de la Ingeniería del Software?",
+    options: [
+      "Procesos",
+      "Métodos",
+      "Marketing",
+      "Calidad"
+    ],
+    correct: 2,
+    feedback: {
+      ok: "¡Bien! Los cuatro pilares son: Procesos, Métodos, Herramientas y Calidad. El marketing pertenece a otra disciplina.",
+      err: "El pilar que no existe es el Marketing (opción C). Los cuatro pilares reales son: Procesos (metodologías), Métodos (técnicas), Herramientas (software de apoyo) y Calidad (aseguramiento)."
+    }
+  },
+  {
+    id: 4,
+    text: "En 2012, Knight Capital Group perdió 440 millones de dólares en 45 minutos debido a un fallo software. ¿Cuál fue la causa principal del desastre?",
+    options: [
+      "Un ataque de hackers externos que inyectaron código malicioso en sus sistemas.",
+      "Un fallo en el hardware del servidor central que provocó una pérdida masiva de datos.",
+      "Pruebas insuficientes y un despliegue sin controles adecuados que reactivó un módulo obsoleto.",
+      "Un error humano de un operador que introdujo datos erróneos en el sistema de trading."
+    ],
+    correct: 2,
+    feedback: {
+      ok: "¡Perfecto! Este caso ilustra dramáticamente el mito del desarrollador: 'Las pruebas las haré al final'. Sin pruebas sistemáticas y sin un protocolo de despliegue, un módulo antiguo se activó por error y generó órdenes de compraventa descontroladas.",
+      err: "La causa real fue la C: pruebas insuficientes y un despliegue sin controles. Un módulo que llevaba años desactivado se reactivó accidentalmente durante una actualización, demostrando que saltarse las pruebas puede ser catastrófico."
+    }
+  },
+  {
+    id: 5,
+    text: "Según el estudio del Standish Group, ¿qué porcentaje de proyectos software finalizan con éxito (dentro del plazo, presupuesto y requisitos acordados)?",
+    options: [
+      "Aproximadamente el 70% de los proyectos",
+      "Aproximadamente el 50% de los proyectos",
+      "Aproximadamente el 30% de los proyectos",
+      "Aproximadamente el 10% de los proyectos"
+    ],
+    correct: 2,
+    feedback: {
+      ok: "¡Correcto! Solo el 30% de proyectos tienen éxito según el Standish Group. Este dato, que se repite año tras año desde los 90, es la razón por la que la gestión de proyectos software es tan crítica.",
+      err: "La respuesta correcta es el 30% (opción C). A pesar de décadas de mejoras en metodologías y herramientas, la mayoría de proyectos software siguen fallando en al menos una de las tres dimensiones: tiempo, coste o funcionalidad."
+    }
+  },
+  {
+    id: 6,
+    text: "¿Cuál de las siguientes herramientas de planificación permite calcular la duración estimada de una tarea usando tres escenarios (optimista, pesimista y más probable)?",
+    options: [
+      "Diagrama de Gantt",
+      "COCOMO (Constructive Cost Model)",
+      "PERT (Program Evaluation and Review Technique)",
+      "Diagrama UML de casos de uso"
+    ],
+    correct: 2,
+    feedback: {
+      ok: "¡Exacto! PERT usa la fórmula: Te = (To + 4·Tm + Tp) / 6. Es la herramienta ideal para estimar tiempos con incertidumbre, dando más peso a la estimación más probable.",
+      err: "La herramienta correcta es PERT (opción C). El Gantt muestra el calendario, COCOMO estima costes a partir de líneas de código, y UML sirve para modelar software. Solo PERT calcula tiempos con las tres estimaciones."
+    }
+  }
+];
+
+let answers = {};
+let submitted = false;
+
+function buildQuiz() {
+  const container = document.getElementById('quiz-container');
+  container.innerHTML = '';
+  answers = {};
+  submitted = false;
+  updateProgress();
+  document.getElementById('btn-submit').classList.remove('active');
+  document.getElementById('results-panel').classList.remove('show');
+  document.getElementById('submit-wrap').style.display = '';
+
+  QUESTIONS.forEach((q, qi) => {
+    const letters = ['A','B','C','D'];
+    const card = document.createElement('div');
+    card.className = 'q-card';
+    card.id = `card-${q.id}`;
+
+    const optionsHtml = q.options.map((opt, oi) => `
+      <div class="option" id="opt-${q.id}-${oi}" onclick="selectOption(${q.id}, ${oi})">
+        <div class="opt-letter">${letters[oi]}</div>
+        <div class="opt-text">${opt}</div>
+      </div>
+    `).join('');
+
+    card.innerHTML = `
+      <div class="q-num">Pregunta ${q.id} de ${QUESTIONS.length}</div>
+      <div class="q-text">${q.text}</div>
+      <div class="options" id="opts-${q.id}">${optionsHtml}</div>
+      <div class="feedback" id="fb-${q.id}">
+        <div class="feedback-icon"></div>
+        <div><strong></strong><span></span></div>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function selectOption(qId, optIdx) {
+  if (submitted) return;
+  // Allow changing answer before submit
+  answers[qId] = optIdx;
+
+  // Update visual selection
+  const q = QUESTIONS.find(x => x.id === qId);
+  q.options.forEach((_, i) => {
+    const el = document.getElementById(`opt-${qId}-${i}`);
+    el.className = 'option';
+    if (i === optIdx) {
+      el.classList.add('selected-pending');
+      el.style.borderColor = 'var(--gold)';
+      el.style.background = 'rgba(212,172,13,.1)';
+      el.querySelector('.opt-letter').style.background = 'var(--gold)';
+      el.querySelector('.opt-letter').style.borderColor = 'var(--gold)';
+      el.querySelector('.opt-letter').style.color = 'var(--navy)';
+    } else {
+      el.style.borderColor = '';
+      el.style.background = '';
+      el.querySelector('.opt-letter').style.background = '';
+      el.querySelector('.opt-letter').style.borderColor = '';
+      el.querySelector('.opt-letter').style.color = '';
+    }
+  });
+
+  updateProgress();
+  const allAnswered = QUESTIONS.every(q => answers[q.id] !== undefined);
+  const btn = document.getElementById('btn-submit');
+  btn.classList.toggle('active', allAnswered);
+}
+
+function updateProgress() {
+  const count = Object.keys(answers).length;
+  const pct = Math.round((count / QUESTIONS.length) * 100);
+  document.getElementById('prog-text').textContent = `${count} de ${QUESTIONS.length} respondidas`;
+  document.getElementById('prog-pct').textContent = `${pct}%`;
+  document.getElementById('prog-fill').style.width = `${pct}%`;
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+  document.getElementById('submit-wrap').style.display = 'none';
+
+  let score = 0;
+  QUESTIONS.forEach(q => {
+    const chosen = answers[q.id];
+    const correct = q.correct;
+    const isRight = chosen === correct;
+    if (isRight) score++;
+
+    // Disable all options, style them
+    q.options.forEach((_, i) => {
+      const el = document.getElementById(`opt-${q.id}-${i}`);
+      el.classList.add('disabled');
+      el.style.borderColor = '';
+      el.style.background = '';
+      el.querySelector('.opt-letter').style.background = '';
+      el.querySelector('.opt-letter').style.borderColor = '';
+      el.querySelector('.opt-letter').style.color = '';
+
+      if (i === correct) {
+        el.classList.add(i === chosen ? 'selected-correct' : 'reveal-correct');
+      } else if (i === chosen && !isRight) {
+        el.classList.add('selected-wrong');
+      }
+    });
+
+    // Feedback
+    const fb = document.getElementById(`fb-${q.id}`);
+    fb.classList.add('show', isRight ? 'correct-fb' : 'wrong-fb');
+    fb.querySelector('.feedback-icon').textContent = isRight ? '✅' : '❌';
+    fb.querySelector('strong').textContent = isRight ? '¡Correcto!' : 'Respuesta incorrecta';
+    fb.querySelector('span').textContent = ' ' + (isRight ? q.feedback.ok.replace('¡Correcto! ','') : q.feedback.err);
+
+    document.getElementById(`card-${q.id}`).classList.add('answered');
+  });
+
+  // Show results
+  const pct = score / QUESTIONS.length;
+  const msgs = [
+    { min: 0,   title: 'Sigue practicando',   msg: 'Aún hay conceptos que repasar. Revisa el material de la sesión y vuelve a intentarlo.' },
+    { min: .34, title: 'Vas por buen camino',  msg: 'Tienes algunas bases, pero conviene repasar los temas con más atención.' },
+    { min: .67, title: '¡Buen trabajo!',        msg: 'Dominas la mayor parte del contenido. Repasa los puntos que fallaste para alcanzar la excelencia.' },
+    { min: 1,   title: '¡Resultado perfecto!', msg: 'Has respondido correctamente todas las preguntas. Excelente dominio de los fundamentos de Ingeniería del Software.' }
+  ];
+  const grade = msgs.reverse().find(m => pct >= m.min);
+
+  setTimeout(() => {
+    const panel = document.getElementById('results-panel');
+    panel.classList.add('show');
+    document.getElementById('score-big').textContent = score;
+    document.getElementById('result-title').textContent = grade.title;
+    document.getElementById('result-msg').textContent = grade.msg;
+
+    const wrong = QUESTIONS.length - score;
+    document.getElementById('result-pills').innerHTML = `
+      <div class="pill pill-ok">✓ ${score} correcta${score!==1?'s':''}</div>
+      ${wrong>0?`<div class="pill pill-err">✗ ${wrong} incorrecta${wrong!==1?'s':''}</div>`:''}
+    `;
+
+    // Animate ring
+    const circumference = 263.9;
+    const offset = circumference * (1 - pct);
+    document.getElementById('ring-fill').style.strokeDashoffset = offset;
+
+    panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 400);
+}
+
+function retryQuiz() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  setTimeout(buildQuiz, 350);
+}
+
+// Init
+buildQuiz();
+</script>
+</body>
+</html>
