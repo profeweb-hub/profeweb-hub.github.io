@@ -1,1 +1,544 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ADGG086PO — Índice del Curso</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+
+    /* HEADER */
+    header {
+      background: linear-gradient(135deg, #1a237e 0%, #283593 50%, #1565c0 100%);
+      padding: 48px 40px 40px;
+      position: relative;
+      overflow: hidden;
+      border-bottom: 3px solid #ffd600;
+    }
+
+    header::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 280px; height: 280px;
+      background: rgba(255,214,0,0.07);
+      border-radius: 50%;
+    }
+
+    header::after {
+      content: '';
+      position: absolute;
+      bottom: -80px; left: 30%;
+      width: 200px; height: 200px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 50%;
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .badge-sepe {
+      background: rgba(255,214,0,0.15);
+      border: 1px solid #ffd600;
+      color: #ffd600;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      padding: 5px 14px;
+      border-radius: 20px;
+      text-transform: uppercase;
+    }
+
+    .badge-fse {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 5px 14px;
+      border-radius: 20px;
+    }
+
+    .header-code {
+      font-size: 13px;
+      color: #90caf9;
+      letter-spacing: 3px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      margin-top: 28px;
+      position: relative; z-index: 1;
+    }
+
+    .header-title {
+      font-size: clamp(20px, 3vw, 30px);
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1.3;
+      max-width: 680px;
+      position: relative; z-index: 1;
+    }
+
+    .header-title span {
+      color: #ffd600;
+    }
+
+    .header-sub {
+      margin-top: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      position: relative; z-index: 1;
+    }
+
+    .pill {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 30px;
+      padding: 6px 16px;
+      font-size: 13px;
+      color: #e3f2fd;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pill-icon { font-size: 14px; }
+
+    /* AUTHOR CARD */
+    .author-section {
+      background: #161b27;
+      border-bottom: 1px solid #1e2a40;
+      padding: 22px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .author-info {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .avatar {
+      width: 46px; height: 46px;
+      background: linear-gradient(135deg, #1565c0, #ffd600);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 16px;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .author-name {
+      font-size: 17px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .author-role {
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 2px;
+    }
+
+    .date-badge {
+      font-size: 12px;
+      color: #64748b;
+      background: #1e2a40;
+      padding: 6px 14px;
+      border-radius: 8px;
+      border: 1px solid #2a3a50;
+    }
+
+    /* MAIN */
+    main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 24px 60px;
+    }
+
+    .section-label {
+      font-size: 11px;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: #4a90d9;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+
+    /* MODULE CARDS */
+    .module {
+      background: #161b27;
+      border: 1px solid #1e2a40;
+      border-radius: 14px;
+      margin-bottom: 16px;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+
+    .module:hover {
+      border-color: #2a4a7f;
+    }
+
+    .module-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px 24px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .module-number {
+      width: 38px; height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+
+    .mod-1 .module-number { background: rgba(21,101,192,0.25); color: #64b5f6; }
+    .mod-2 .module-number { background: rgba(255,214,0,0.15); color: #ffd600; }
+    .mod-3 .module-number { background: rgba(46,160,110,0.2); color: #4caf50; }
+
+    .module-title-block { flex: 1; }
+
+    .module-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #e2e8f0;
+    }
+
+    .module-count {
+      font-size: 12px;
+      color: #4a6080;
+      margin-top: 3px;
+    }
+
+    .module-toggle {
+      color: #4a6080;
+      font-size: 18px;
+      transition: transform 0.3s;
+    }
+
+    .module.open .module-toggle {
+      transform: rotate(180deg);
+    }
+
+    .module-body {
+      display: none;
+      border-top: 1px solid #1e2a40;
+      padding: 0 24px 20px;
+    }
+
+    .module.open .module-body {
+      display: block;
+    }
+
+    .sub-section {
+      margin-top: 18px;
+    }
+
+    .sub-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #90caf9;
+      margin-bottom: 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #1e2a40;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sub-title::before {
+      content: '';
+      width: 3px; height: 14px;
+      background: #1565c0;
+      border-radius: 2px;
+      display: inline-block;
+    }
+
+    .topic-list {
+      list-style: none;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 6px;
+    }
+
+    .topic-list li {
+      font-size: 13px;
+      color: #7a90a8;
+      padding: 6px 10px;
+      background: #0f1421;
+      border-radius: 6px;
+      border-left: 2px solid #1e2a40;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .topic-list li:hover {
+      color: #e2e8f0;
+      border-color: #1565c0;
+    }
+
+    /* EVAL CARDS */
+    .eval-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      padding-top: 6px;
+    }
+
+    .eval-card {
+      background: #0f1421;
+      border: 1px solid #1e2a40;
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .eval-icon { font-size: 26px; margin-bottom: 8px; }
+
+    .eval-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #e2e8f0;
+    }
+
+    .eval-desc {
+      font-size: 11px;
+      color: #4a6080;
+      margin-top: 4px;
+    }
+
+    /* FOOTER */
+    footer {
+      text-align: center;
+      padding: 28px;
+      border-top: 1px solid #1e2a40;
+      color: #2e3f55;
+      font-size: 12px;
+    }
+
+    footer span { color: #4a6080; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div class="badge-sepe">SEPE · Trabajadores Ocupados</div>
+    <div class="badge-fse">★ Fondo Social Europeo</div>
+  </div>
+
+  <div class="header-code">ADGG086PO</div>
+
+  <h1 class="header-title">
+    Metodología y Gestión de Proyectos de<br>
+    <span>Ingenierías Software para la Web</span>
+  </h1>
+
+  <div class="header-sub">
+    <div class="pill"><span class="pill-icon">🕐</span> 150 horas</div>
+    <div class="pill"><span class="pill-icon">🖥️</span> Modalidad Indistinta</div>
+    <div class="pill"><span class="pill-icon">👥</span> Máx. 30 participantes</div>
+    <div class="pill"><span class="pill-icon">📅</span> Noviembre 2018</div>
+    <div class="pill"><span class="pill-icon">🏢</span> Administración y Gestión</div>
+  </div>
+</header>
+
+<div class="author-section">
+  <div class="author-info">
+    <div class="avatar">DR</div>
+    <div>
+      <div class="author-name">D. Ramírez-Escobar</div>
+      <div class="author-role">Participante del curso · ADGG086PO</div>
+    </div>
+  </div>
+  <div class="date-badge">📋 Familia Prof.: Gestión de la Información y Comunicación</div>
+</div>
+
+<main>
+
+  <div class="section-label">Índice de Contenidos</div>
+
+  <!-- MÓDULO 1 -->
+  <div class="module mod-1 open">
+    <div class="module-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="module-number">1</div>
+      <div class="module-title-block">
+        <div class="module-title">Introducción a la Ingeniería del Software</div>
+        <div class="module-count">4 bloques temáticos · 35 subtemas</div>
+      </div>
+      <div class="module-toggle">▾</div>
+    </div>
+    <div class="module-body">
+      <div class="sub-section">
+        <div class="sub-title">1.1 Conceptos Generales</div>
+        <ul class="topic-list">
+          <li>Conceptos y definiciones</li>
+          <li>Ciclo de vida del software</li>
+          <li>Metodologías de IS</li>
+          <li>IS estructurada y orientada a objetos</li>
+          <li>Ingeniería Web</li>
+          <li>CASE</li>
+        </ul>
+      </div>
+      <div class="sub-section">
+        <div class="sub-title">1.2 Análisis de Sistemas de Información</div>
+        <ul class="topic-list">
+          <li>Principios del análisis</li>
+          <li>Ingeniería de requisitos</li>
+          <li>Informes del análisis</li>
+          <li>Análisis de funciones y datos</li>
+          <li>Análisis orientado a objetos</li>
+          <li>Diagramas UML (análisis)</li>
+        </ul>
+      </div>
+      <div class="sub-section">
+        <div class="sub-title">1.3 Diseño de Software</div>
+        <ul class="topic-list">
+          <li>Enfoques y niveles de diseño</li>
+          <li>Principios del diseño</li>
+          <li>Diseño de interfaz de usuario</li>
+          <li>Diseño arquitectónico</li>
+          <li>Diseño detallado</li>
+          <li>Técnicas estructuradas y OO</li>
+          <li>Diagramas UML (diseño)</li>
+        </ul>
+      </div>
+      <div class="sub-section">
+        <div class="sub-title">1.4 Prueba del Software</div>
+        <ul class="topic-list">
+          <li>Pruebas unitarias</li>
+          <li>Pruebas del sistema</li>
+          <li>Pruebas de implantación</li>
+          <li>Pruebas de aceptación</li>
+          <li>Pruebas de regresión</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- MÓDULO 2 -->
+  <div class="module mod-2">
+    <div class="module-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="module-number">2</div>
+      <div class="module-title-block">
+        <div class="module-title">Gestión de Proyectos de Ingeniería del Software</div>
+        <div class="module-count">5 bloques temáticos · 28 subtemas</div>
+      </div>
+      <div class="module-toggle">▾</div>
+    </div>
+    <div class="module-body">
+      <div class="sub-section">
+        <div class="sub-title">2.1 Introducción a la Gestión de Proyectos</div>
+        <ul class="topic-list">
+          <li>Objetivos y temporalidad</li>
+          <li>Presupuesto y ciclo de vida</li>
+          <li>El Director del Proyecto</li>
+          <li>Etapas: Inicio, Planificación, Ejecución, Control, Cierre</li>
+        </ul>
+      </div>
+      <div class="sub-section">
+        <div class="sub-title">2.2 Definición del Problema y Estrategias</div>
+        <ul class="topic-list">
+          <li>Objetivos y especificaciones</li>
+          <li>Requerimientos de interesados</li>
+          <li>Estrategias de solución</li>
+        </ul>
+      </div>
+      <div class="sub-section">
+        <div class="sub-title">2.3 Planificación del Tiempo</div>
+        <ul class="topic-list">
+          <li>Representación gráfica de tareas</li>
+          <li>Análisis de red</li>
+          <li>PERT</li>
+          <li>Camino crítico</li>
+        </ul>
+      </div>
+      <div class="sub-section">
+        <div class="sub-title">2.4 Hitos, Documentos y Revisiones</div>
+        <ul class="topic-list">
+          <li>Ordenación de etapas</li>
+          <li>Diagrama de Gantt</li>
+          <li>Hitos y fechas límite</li>
+          <li>Documentación técnica</li>
+          <li>Conflictos entre actividades</li>
+        </ul>
+      </div>
+      <div class="sub-section">
+        <div class="sub-title">2.5 Factores de Productividad</div>
+        <ul class="topic-list">
+          <li>Métricas de productividad</li>
+          <li>Herramientas de mejora</li>
+          <li>Disponibilidad de recursos</li>
+          <li>Experiencia del equipo</li>
+          <li>COCOMO</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- MÓDULO 3 -->
+  <div class="module mod-3">
+    <div class="module-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="module-number">3</div>
+      <div class="module-title-block">
+        <div class="module-title">Evaluación</div>
+        <div class="module-count">3 actividades de evaluación</div>
+      </div>
+      <div class="module-toggle">▾</div>
+    </div>
+    <div class="module-body">
+      <div class="eval-grid">
+        <div class="eval-card">
+          <div class="eval-icon">📝</div>
+          <div class="eval-title">Test de Conocimientos</div>
+          <div class="eval-desc">Evaluación teórica de todos los contenidos del curso</div>
+        </div>
+        <div class="eval-card">
+          <div class="eval-icon">⭐</div>
+          <div class="eval-title">Trabajo Voluntario</div>
+          <div class="eval-desc">Actividad complementaria para reforzar aprendizaje</div>
+        </div>
+        <div class="eval-card">
+          <div class="eval-icon">✅</div>
+          <div class="eval-title">Trabajo Obligatorio</div>
+          <div class="eval-desc">Actividad requerida para superar el curso</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  Programa cofinanciado por el <span>Fondo Social Europeo</span> · SEPE · Ministerio de Trabajo, Migraciones y Seguridad Social · <span>Noviembre 2018</span>
+</footer>
+
+</body>
+</html>
