@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test · Ciclo de Vida del Software · ADGG086PO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    min-height: 100vh;
+    background: #F0ECE4;
+    font-family: 'Source Serif 4', Georgia, serif;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px 16px;
+  }
+
+  .card {
+    width: 100%; max-width: 700px;
+    background: #FDFAF6;
+    border-radius: 4px;
+    box-shadow: 0 2px 0 #D4CDBF, 0 16px 48px rgba(0,0,0,.12), 0 4px 16px rgba(0,0,0,.06);
+    overflow: hidden;
+  }
+
+  /* ── SCREEN MANAGEMENT ── */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* ══ INTRO ══════════════════════════════════════════════════════ */
+  .intro-top {
+    background: #1C1917;
+    padding: 48px 44px 36px;
+    position: relative; overflow: hidden;
+  }
+  .intro-top::before {
+    content: ''; position: absolute; top: -60px; right: -60px;
+    width: 240px; height: 240px; border-radius: 50%;
+    border: 1px solid rgba(255,255,255,.06);
+  }
+  .intro-top::after {
+    content: ''; position: absolute; bottom: -40px; left: 40px;
+    width: 160px; height: 160px; border-radius: 50%;
+    border: 1px solid rgba(255,255,255,.04);
+  }
+  .intro-tag {
+    font-size: 10px; letter-spacing: 4px; text-transform: uppercase;
+    color: #8B7355; margin-bottom: 18px;
+  }
+  .intro-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 42px; font-weight: 900; color: #FDFAF6;
+    line-height: 1.05; margin-bottom: 10px;
+  }
+  .intro-title span { color: #E8A020; }
+  .intro-sub {
+    font-size: 15px; color: #78716C; font-style: italic;
+    margin-bottom: 32px; font-weight: 300;
+  }
+  .intro-stats { display: flex; gap: 20px; }
+  .intro-stat {
+    border: 1px solid rgba(255,255,255,.1);
+    padding: 12px 20px; border-radius: 2px; text-align: center;
+  }
+  .intro-stat-n {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px; color: #E8A020; display: block;
+  }
+  .intro-stat-l {
+    font-size: 10px; color: #57534E;
+    text-transform: uppercase; letter-spacing: 2px;
+  }
+
+  .intro-body { padding: 36px 44px; }
+  .topic-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px; margin-bottom: 28px;
+  }
+  .topic-item {
+    padding: 12px 14px; border-radius: 2px;
+    background: #F5F0E8;
+  }
+  .topic-name {
+    font-size: 9px; letter-spacing: 3px; text-transform: uppercase;
+    margin-bottom: 4px; display: block; font-weight: 600;
+  }
+  .topic-desc { font-size: 12px; color: #57534E; line-height: 1.4; }
+
+  .notice {
+    font-size: 12px; color: #78716C; font-style: italic;
+    line-height: 1.7; margin-bottom: 28px;
+    padding-left: 14px; border-left: 2px solid #D4CDBF;
+  }
+
+  .start-btn {
+    width: 100%; padding: 18px;
+    background: #1C1917; color: #FDFAF6;
+    border: none; border-radius: 2px;
+    font-family: 'Playfair Display', serif;
+    font-size: 17px; font-weight: 700;
+    cursor: pointer; letter-spacing: 1px;
+    position: relative; transition: background .2s;
+  }
+  .start-btn::after {
+    content: '→'; position: absolute; right: 24px;
+    top: 50%; transform: translateY(-50%);
+    font-size: 20px; transition: right .2s;
+  }
+  .start-btn:hover { background: #292524; }
+  .start-btn:hover::after { right: 18px; }
+
+  /* ══ QUIZ ════════════════════════════════════════════════════════ */
+  .q-bar { height: 4px; background: #E8E0D4; }
+  .q-bar-fill { height: 100%; transition: width .5s cubic-bezier(.4,0,.2,1); }
+
+  .q-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 28px;
+  }
+  .q-head-left { display: flex; align-items: center; gap: 10px; }
+  .q-icon { font-size: 20px; color: rgba(255,255,255,.9); width: 32px; text-align: center; }
+  .q-topic {
+    font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+    color: rgba(255,255,255,.85);
+  }
+  .q-timer {
+    font-size: 13px; color: rgba(255,255,255,.8);
+    background: rgba(0,0,0,.2); padding: 4px 12px; border-radius: 2px;
+    font-variant-numeric: tabular-nums; letter-spacing: 1px;
+    font-family: 'Courier New', monospace;
+  }
+
+  .q-body {
+    padding: 32px 36px 24px;
+    transition: opacity .22s;
+  }
+  .q-body.fading { opacity: 0; }
+
+  .q-counter {
+    font-size: 11px; color: #A8A29E; letter-spacing: 2px;
+    text-transform: uppercase; margin-bottom: 14px;
+  }
+  .q-text {
+    font-size: 17px; color: #1C1917; line-height: 1.7;
+    margin-bottom: 26px; white-space: pre-line;
+  }
+
+  .hint-btn {
+    background: none; border: 1px dashed #C4B9A8;
+    color: #78716C; padding: 6px 14px; border-radius: 2px;
+    font-size: 12px; cursor: pointer; margin-bottom: 16px;
+    font-family: 'Source Serif 4', serif; font-style: italic;
+    transition: border-color .15s, color .15s; display: inline-block;
+  }
+  .hint-btn:hover { border-color: #E8A020; color: #E8A020; }
+
+  .hint-box {
+    background: #FFFBEB; border-left: 3px solid #E8A020;
+    padding: 10px 16px; border-radius: 2px;
+    font-size: 13px; color: #92400E; font-style: italic;
+    margin-bottom: 16px; line-height: 1.6; display: none;
+  }
+  .hint-box.visible { display: block; }
+
+  .options { display: flex; flex-direction: column; gap: 9px; margin-bottom: 18px; }
+
+  .opt {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 13px 16px; border-radius: 2px;
+    border: 1.5px solid #E8E0D4; background: #FDFAF6;
+    cursor: pointer; transition: all .18s; text-align: left;
+    width: 100%; font-family: 'Source Serif 4', serif;
+  }
+  .opt:hover:not(:disabled) { border-color: #C4B9A8; background: #F5F0E8; }
+  .opt.sel  { border-color: var(--qc); background: #FFF8F0; }
+  .opt.ok   { border-color: #20A090; background: #F0FFFC; cursor: default; }
+  .opt.bad  { border-color: #E05C45; background: #FFF5F3; cursor: default; }
+  .opt:disabled { cursor: default; }
+
+  .opt-dot {
+    width: 24px; height: 24px; border-radius: 50%;
+    border: 1.5px solid #C4B9A8; color: #A8A29E;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; flex-shrink: 0;
+    transition: all .18s; margin-top: 1px;
+    font-family: 'Playfair Display', serif;
+  }
+  .opt.sel .opt-dot { border-color: var(--qc); background: var(--qc); color: #fff; }
+  .opt.ok  .opt-dot { border-color: #20A090; background: #20A090; color: #fff; }
+  .opt.bad .opt-dot { border-color: #E05C45; background: #E05C45; color: #fff; }
+
+  .opt-text { font-size: 14px; color: #44403C; line-height: 1.55; }
+  .opt.ok  .opt-text { color: #0D4A43; font-weight: 600; }
+  .opt.bad .opt-text { color: #7F1D1D; }
+
+  .expl {
+    padding: 14px 18px; border-radius: 2px;
+    margin-bottom: 20px; line-height: 1.65; display: none;
+  }
+  .expl.visible { display: block; }
+  .expl.ok  { background: #F0FFFC; border-left: 3px solid #20A090; }
+  .expl.bad { background: #FFF5F3; border-left: 3px solid #E05C45; }
+  .expl-title {
+    font-size: 13px; font-weight: 600; margin-bottom: 6px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .expl.ok  .expl-title { color: #0D4A43; }
+  .expl.bad .expl-title { color: #7F1D1D; }
+  .expl-body { font-size: 13px; color: #44403C; }
+
+  .actions { display: flex; gap: 10px; }
+
+  .confirm-btn {
+    flex: 1; padding: 15px; border-radius: 2px;
+    background: #1C1917; color: #FDFAF6;
+    border: none; font-family: 'Playfair Display', serif;
+    font-size: 14px; font-weight: 700; cursor: pointer;
+    letter-spacing: .5px; transition: background .15s;
+  }
+  .confirm-btn:disabled { background: #E8E0D4; color: #A8A29E; cursor: not-allowed; }
+  .confirm-btn:not(:disabled):hover { background: #292524; }
+
+  .next-btn {
+    flex: 1; padding: 15px; border-radius: 2px;
+    color: #fff; border: none;
+    font-family: 'Playfair Display', serif;
+    font-size: 14px; font-weight: 700; cursor: pointer;
+    letter-spacing: .5px;
+    box-shadow: 0 4px 14px rgba(0,0,0,.15);
+    transition: filter .15s; display: none;
+    background: var(--qc);
+  }
+  .next-btn:hover { filter: brightness(1.08); }
+
+  .dots {
+    display: flex; gap: 6px; justify-content: center;
+    padding: 16px 0 20px;
+  }
+  .dot { height: 6px; border-radius: 3px; transition: all .3s; }
+  .dot.cur   { width: 22px; }
+  .dot.pend  { width: 6px; background: #E8E0D4; }
+  .dot.right { width: 6px; background: #20A090; }
+  .dot.wrong { width: 6px; background: #E05C45; }
+
+  /* ══ RESULTS ═════════════════════════════════════════════════════ */
+  .res-top {
+    background: #1C1917;
+    padding: 44px 44px 36px;
+    text-align: center; position: relative; overflow: hidden;
+  }
+  .res-top::before {
+    content: ''; position: absolute; top: -80px; right: -80px;
+    width: 280px; height: 280px; border-radius: 50%;
+    border: 1px solid rgba(255,255,255,.05);
+  }
+
+  .score-ring {
+    width: 110px; height: 110px; border-radius: 50%;
+    border: 3px solid var(--gc);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    margin: 0 auto 20px;
+    background: rgba(255,255,255,.04);
+  }
+  .score-n {
+    font-family: 'Playfair Display', serif;
+    font-size: 38px; font-weight: 900; color: #fff; line-height: 1;
+  }
+  .score-d { font-size: 13px; color: #78716C; }
+  .grade-label {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px; font-weight: 700; margin-bottom: 6px;
+  }
+  .grade-sub { font-size: 14px; color: #78716C; font-style: italic; }
+
+  .res-body { padding: 32px 40px; }
+  .stats-row {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px; margin-bottom: 28px;
+  }
+  .stat-box {
+    background: #F5F0E8; border-radius: 2px;
+    padding: 14px 16px; text-align: center;
+  }
+  .stat-n {
+    font-family: 'Playfair Display', serif; font-size: 28px;
+    display: block;
+  }
+  .stat-l {
+    font-size: 10px; color: #A8A29E;
+    text-transform: uppercase; letter-spacing: 2px; margin-top: 4px;
+    display: block;
+  }
+
+  .review-head {
+    font-size: 10px; letter-spacing: 4px; text-transform: uppercase;
+    color: #A8A29E; margin-bottom: 14px;
+  }
+  .review-item {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 12px 14px; border-radius: 2px; margin-bottom: 8px;
+  }
+  .review-item.ok  { background: #F0FFFC; border-left: 3px solid #20A090; }
+  .review-item.bad { background: #FFF5F3; border-left: 3px solid #E05C45; }
+  .review-icon {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; flex-shrink: 0; color: #fff;
+    min-width: 26px;
+  }
+  .review-item.ok  .review-icon { background: #20A090; }
+  .review-item.bad .review-icon { background: #E05C45; }
+  .review-q { font-size: 12.5px; color: #44403C; line-height: 1.4; margin-bottom: 3px; }
+  .review-a { font-size: 11.5px; font-style: italic; }
+  .review-item.ok  .review-a { color: #0D4A43; }
+  .review-item.bad .review-a { color: #7F1D1D; }
+
+  .restart-btn {
+    width: 100%; padding: 17px; margin-top: 24px;
+    background: #1C1917; color: #FDFAF6;
+    border: none; border-radius: 2px;
+    font-family: 'Playfair Display', serif;
+    font-size: 16px; font-weight: 700;
+    cursor: pointer; letter-spacing: 1px;
+    transition: background .15s; position: relative;
+  }
+  .restart-btn::after { content: '↺'; position: absolute; right: 24px; top: 50%; transform: translateY(-50%); }
+  .restart-btn:hover { background: #292524; }
+
+  @media (max-width: 540px) {
+    .intro-top, .intro-body { padding-left: 24px; padding-right: 24px; }
+    .intro-title { font-size: 30px; }
+    .topic-grid { grid-template-columns: 1fr 1fr; }
+    .q-body { padding: 24px 20px 18px; }
+    .res-body { padding: 24px 20px; }
+    .intro-stats { gap: 10px; }
+    .intro-stat { padding: 10px 14px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+
+  <!-- ══ INTRO ══════════════════════════════════════════════════ -->
+  <div id="screen-intro" class="screen active">
+    <div class="intro-top">
+      <div class="intro-tag">ADGG086PO · Sesión 2 · Evaluación</div>
+      <h1 class="intro-title">Ciclo de Vida<br>del <span>Software</span></h1>
+      <p class="intro-sub">Test de evaluación — Modelos SDLC</p>
+      <div class="intro-stats">
+        <div class="intro-stat"><span class="intro-stat-n">6</span><span class="intro-stat-l">preguntas</span></div>
+        <div class="intro-stat"><span class="intro-stat-n">≈15</span><span class="intro-stat-l">minutos</span></div>
+        <div class="intro-stat"><span class="intro-stat-n">1 pt</span><span class="intro-stat-l">por acierto</span></div>
+      </div>
+    </div>
+    <div class="intro-body">
+      <div class="topic-grid">
+        <div class="topic-item" style="border-left:3px solid #5B6EF5"><span class="topic-name" style="color:#5B6EF5">Fundamentos</span><span class="topic-desc">Qué es el SDLC y para qué sirve</span></div>
+        <div class="topic-item" style="border-left:3px solid #E05C45"><span class="topic-name" style="color:#E05C45">Cascada</span><span class="topic-desc">Cuándo y por qué usar Waterfall</span></div>
+        <div class="topic-item" style="border-left:3px solid #20A090"><span class="topic-name" style="color:#20A090">Modelo V</span><span class="topic-desc">Verificación vs Validación</span></div>
+        <div class="topic-item" style="border-left:3px solid #9B59B6"><span class="topic-name" style="color:#9B59B6">Espiral</span><span class="topic-desc">Riesgos e iteraciones de Boehm</span></div>
+        <div class="topic-item" style="border-left:3px solid #E8A020"><span class="topic-name" style="color:#E8A020">Comparativa</span><span class="topic-desc">Criterios de selección del modelo</span></div>
+        <div class="topic-item" style="border-left:3px solid #E05C45"><span class="topic-name" style="color:#E05C45">Caso práctico</span><span class="topic-desc">Pinturas Roca: 3 fases reales</span></div>
+      </div>
+      <p class="notice">Cada pregunta tiene una única respuesta correcta. Puedes pedir una pista antes de confirmar. Al responder, recibirás una explicación detallada. Las preguntas de caso práctico están basadas en el ejercicio de Pinturas Roca.</p>
+      <button class="start-btn" onclick="startQuiz()">Comenzar el test</button>
+    </div>
+  </div>
+
+  <!-- ══ QUIZ ════════════════════════════════════════════════════ -->
+  <div id="screen-quiz" class="screen">
+    <div class="q-bar"><div class="q-bar-fill" id="progress-fill"></div></div>
+    <div class="q-head" id="q-head">
+      <div class="q-head-left">
+        <span class="q-icon" id="q-icon"></span>
+        <span class="q-topic" id="q-topic"></span>
+      </div>
+      <span class="q-timer" id="q-timer">00:00</span>
+    </div>
+    <div class="q-body" id="q-body">
+      <div class="q-counter" id="q-counter"></div>
+      <p class="q-text" id="q-text"></p>
+      <button class="hint-btn" id="hint-btn" onclick="showHint()">Mostrar pista…</button>
+      <div class="hint-box" id="hint-box"></div>
+      <div class="options" id="options"></div>
+      <div class="expl" id="expl">
+        <div class="expl-title" id="expl-title"></div>
+        <p class="expl-body" id="expl-body"></p>
+      </div>
+      <div class="actions">
+        <button class="confirm-btn" id="confirm-btn" onclick="doConfirm()" disabled>Confirmar respuesta</button>
+        <button class="next-btn" id="next-btn" onclick="doNext()"></button>
+      </div>
+    </div>
+    <div class="dots" id="dots"></div>
+  </div>
+
+  <!-- ══ RESULTS ═════════════════════════════════════════════════ -->
+  <div id="screen-results" class="screen">
+    <div class="res-top" id="res-top">
+      <div class="score-ring" id="score-ring">
+        <span class="score-n" id="score-n"></span>
+        <span class="score-d">de 6</span>
+      </div>
+      <div class="grade-label" id="grade-label"></div>
+      <p class="grade-sub" id="grade-sub"></p>
+    </div>
+    <div class="res-body">
+      <div class="stats-row">
+        <div class="stat-box" style="border-top:3px solid #20A090">
+          <span class="stat-n" style="color:#20A090" id="stat-correct"></span>
+          <span class="stat-l">Correctas</span>
+        </div>
+        <div class="stat-box" style="border-top:3px solid #E05C45">
+          <span class="stat-n" style="color:#E05C45" id="stat-wrong"></span>
+          <span class="stat-l">Incorrectas</span>
+        </div>
+        <div class="stat-box" style="border-top:3px solid #5B6EF5">
+          <span class="stat-n" style="color:#5B6EF5" id="stat-time"></span>
+          <span class="stat-l">Tiempo</span>
+        </div>
+      </div>
+      <div class="review-head">Revisión de respuestas</div>
+      <div id="review-list"></div>
+      <button class="restart-btn" onclick="doRestart()">Repetir el test</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const QUESTIONS = [
+  {
+    id: 1,
+    topic: "FUNDAMENTOS SDLC",
+    color: "#5B6EF5",
+    icon: "◈",
+    question: "¿Cuál de las siguientes afirmaciones describe MEJOR el propósito del SDLC (Software Development Life Cycle)?",
+    options: [
+      "Es un lenguaje de programación orientado a la gestión de proyectos empresariales",
+      "Es un proceso estructurado que divide el desarrollo en fases con entregables y criterios de finalización propios",
+      "Es una metodología ágil diseñada exclusivamente para equipos de menos de 10 personas",
+      "Es una herramienta de control de versiones para proyectos de software distribuido",
+    ],
+    correct: 1,
+    hint: "Piensa en qué problema resuelve el SDLC: organizar, estructurar, dividir en etapas…",
+    explanation: "El SDLC es un marco de trabajo que organiza el desarrollo en fases distintas (análisis, diseño, implementación, pruebas…), cada una con entregables, participantes y criterios de finalización propios. No es un lenguaje ni una herramienta concreta, y tampoco está limitado a equipos pequeños.",
+  },
+  {
+    id: 2,
+    topic: "MODELO CASCADA",
+    color: "#E05C45",
+    icon: "▽",
+    question: "Una agencia espacial encarga el software de navegación de un satélite. Los requisitos están fijados por las leyes de la física y no cambiarán. Cualquier error es inaceptable una vez lanzado. ¿Qué modelo SDLC es el MÁS apropiado?",
+    options: [
+      "Espiral, porque los riesgos técnicos del espacio son enormes y hay que gestionarlos en cada iteración",
+      "Cascada, porque los requisitos son completamente estables y se necesita documentación exhaustiva",
+      "Scrum con sprints de 2 semanas para responder rápidamente a los imprevistos de la misión",
+      "Prototipado evolutivo, para que el cliente pueda ir validando avances durante el desarrollo",
+    ],
+    correct: 1,
+    hint: "¿Qué característica hace que Cascada sea preferible aquí frente al Espiral? Piensa en la estabilidad de requisitos.",
+    explanation: "El Modelo Cascada es idóneo cuando los requisitos son completamente estables y bien comprendidos desde el inicio. En proyectos aeroespaciales, médicos o de defensa, los errores se previenen con planificación meticulosa y documentación exhaustiva, no con iteraciones. El Espiral añadiría complejidad innecesaria si los requisitos ya son perfectamente conocidos.",
+  },
+  {
+    id: 3,
+    topic: "MODELO EN V",
+    color: "#20A090",
+    icon: "⋁",
+    question: "En el Modelo en V, ¿cuál es la diferencia fundamental entre VERIFICACIÓN y VALIDACIÓN?",
+    options: [
+      "La verificación la realiza el cliente externo; la validación la ejecuta el equipo técnico interno",
+      "La verificación comprueba que el código no tiene bugs; la validación mide el rendimiento bajo carga",
+      "La verificación pregunta '¿estamos construyendo el producto correctamente?' y la validación '¿estamos construyendo el producto correcto?'",
+      "Son sinónimos en el Modelo en V; ambas se refieren a las pruebas finales antes de la entrega",
+    ],
+    correct: 2,
+    hint: "Una perspectiva es interna (equipo técnico), la otra es externa (cliente). ¿Cuál es cuál?",
+    explanation: "Verificación (perspectiva interna): ¿el producto cumple la especificación técnica? Validación (perspectiva del cliente): ¿el producto hace lo que el cliente realmente necesita? Puedes verificar perfectamente un producto que no valida —como construir una calculadora impecable cuando el cliente necesitaba una agenda.",
+  },
+  {
+    id: 4,
+    topic: "MODELO ESPIRAL",
+    color: "#9B59B6",
+    icon: "◎",
+    question: "El Modelo en Espiral, propuesto por Barry Boehm en 1988, se diferencia de Cascada y Modelo V principalmente porque:",
+    options: [
+      "Permite trabajar sin documentación formal, agilizando la entrega de código funcional al cliente",
+      "Incorpora el análisis explícito de riesgos en cada iteración y permite la participación continua del cliente a lo largo del proyecto",
+      "Elimina las fases de diseño y análisis para reducir los tiempos de desarrollo en proyectos urgentes",
+      "Solo puede aplicarse a proyectos de más de 100 personas y duración superior a 5 años",
+    ],
+    correct: 1,
+    hint: "¿Qué concepto clave añade el Espiral que ninguno de los otros dos modelos tiene de forma explícita?",
+    explanation: "La aportación fundamental del Espiral es el análisis de riesgos en cada vuelta del ciclo. A diferencia de Cascada y Modelo V (que asumen requisitos estables), el Espiral asume que pueden surgir riesgos imprevistos y los trata proactivamente en cada iteración. El cliente también participa de forma continua, no solo al inicio.",
+  },
+  {
+    id: 5,
+    topic: "COMPARATIVA DE MODELOS",
+    color: "#E8A020",
+    icon: "⚖",
+    question: "Tres proyectos en cartera. Asigna el modelo SDLC más adecuado a cada uno:\n\n① Sistema de control de semáforos para una ciudad (requisitos legales fijos, documentación obligatoria, cero errores tolerables)\n② Startup que quiere probar si su app de mascotas tiene mercado (requisitos inciertos, 4 personas, pivots frecuentes)\n③ Migración de base de datos bancaria a la nube (requisitos claros, 80 personas, riesgos técnicos enormes)",
+    options: [
+      "① Cascada  ·  ② Espiral  ·  ③ Modelo V",
+      "① Modelo V  ·  ② Ágil/Espiral  ·  ③ Espiral",
+      "① Espiral  ·  ② Cascada  ·  ③ Modelo V",
+      "① Modelo V  ·  ② Cascada  ·  ③ Espiral",
+    ],
+    correct: 1,
+    hint: "Para cada proyecto: ¿los requisitos son estables o inciertos? ¿Los riesgos son altos o bajos?",
+    explanation: "① Semáforos → Modelo V: requisitos legales estables + pruebas planificadas desde el inicio + documentación crítica. ② Startup → Ágil o Espiral: alta incertidumbre + equipo pequeño + necesidad de validar hipótesis. ③ Banco → Espiral: aunque los requisitos son claros, los riesgos técnicos (datos críticos, continuidad del servicio) son enormes y deben gestionarse iterativamente.",
+  },
+  {
+    id: 6,
+    topic: "CASO PRÁCTICO",
+    color: "#E05C45",
+    icon: "🎨",
+    question: "Pinturas Roca digitaliza su negocio en tres fases:\n\nFase A — Web corporativa (requisitos cerrados, 3 meses, 3.500€)\nFase B — Tienda online con pasarela de pago (dinero real, errores costosos, integración bancaria)\nFase C — App móvil con IA de recomendación (nadie sabe si los clientes la usarán)\n\n¿Qué combinación de modelos aplica correctamente los criterios de selección?",
+    options: [
+      "A→Espiral (toda web necesita iteración)  ·  B→Cascada (el banco ya lo tiene probado)  ·  C→Modelo V (la IA necesita pruebas)",
+      "A→Cascada (estable y simple)  ·  B→Modelo V (pruebas críticas desde el inicio)  ·  C→Espiral (incierto y arriesgado)",
+      "A→Modelo V  ·  B→Espiral  ·  C→Cascada, porque la complejidad creciente exige modelos más simples al final",
+      "Las tres fases deberían usar Espiral para mantener coherencia metodológica en todo el proyecto",
+    ],
+    correct: 1,
+    hint: "Cada fase tiene un perfil distinto: requisitos claros vs inciertos, riesgo bajo vs alto. El modelo debe adaptarse a cada perfil.",
+    explanation: "A→Cascada: requisitos cerrados, presupuesto fijo, entrega única. B→Modelo V: el dinero real exige que las pruebas (pasarela bancaria, cálculo de IVA, seguridad) se planifiquen antes de escribir código. C→Espiral: nadie sabe si los clientes usarán la app; cada iteración valida una hipótesis antes de invertir en la siguiente. La lección central: no existe un modelo único perfecto.",
+  },
+];
+
+const GRADES = [
+  { min: 6, label: "Sobresaliente", sub: "Dominio completo del ciclo de vida del software", color: "#20A090" },
+  { min: 5, label: "Notable",       sub: "Muy buen manejo de los tres modelos", color: "#5B6EF5" },
+  { min: 4, label: "Bien",          sub: "Repasa las diferencias entre Modelo V y Espiral", color: "#E8A020" },
+  { min: 3, label: "Aprobado",      sub: "Revisa la comparativa de modelos de la sesión", color: "#9B59B6" },
+  { min: 0, label: "Suspenso",      sub: "Necesitas repasar la sesión completa antes del siguiente ejercicio", color: "#E05C45" },
+];
+
+// ── STATE ─────────────────────────────────────────────────────────
+let cur = 0, sel = null, confirmed = false;
+let answers = [], hintVisible = false;
+let timerSecs = 0, timerInterval = null;
+const LETTERS = ["A","B","C","D"];
+
+// ── HELPERS ───────────────────────────────────────────────────────
+function fmtTime(s) {
+  return String(Math.floor(s/60)).padStart(2,"0") + ":" + String(s%60).padStart(2,"0");
+}
+function getGrade(score) { return GRADES.find(g => score >= g.min); }
+
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById("screen-"+id).classList.add("active");
+}
+
+// ── QUIZ RENDER ───────────────────────────────────────────────────
+function renderQuestion() {
+  const q = QUESTIONS[cur];
+  const pct = Math.round(((cur + (confirmed ? 1 : 0)) / QUESTIONS.length) * 100);
+
+  // progress + header
+  const fill = document.getElementById("progress-fill");
+  fill.style.width = pct + "%";
+  fill.style.background = q.color;
+
+  const head = document.getElementById("q-head");
+  head.style.background = q.color;
+  document.getElementById("q-icon").textContent = q.icon;
+  document.getElementById("q-topic").textContent = q.topic;
+  document.getElementById("q-counter").textContent = `Pregunta ${cur+1} de ${QUESTIONS.length}`;
+  document.getElementById("q-text").textContent = q.question;
+
+  // hint
+  const hintBtn = document.getElementById("hint-btn");
+  const hintBox = document.getElementById("hint-box");
+  hintBtn.style.display = confirmed ? "none" : "inline-block";
+  hintBox.textContent = "💡 " + q.hint;
+  hintBox.classList.toggle("visible", hintVisible && !confirmed);
+
+  // card CSS var for selected color
+  document.getElementById("screen-quiz").style.setProperty("--qc", q.color);
+
+  // options
+  const optEl = document.getElementById("options");
+  optEl.innerHTML = "";
+  q.options.forEach((opt, i) => {
+    let cls = "opt";
+    let dot = LETTERS[i];
+    if (confirmed) {
+      if (i === q.correct) { cls += " ok"; dot = "✓"; }
+      else if (i === sel)  { cls += " bad"; dot = "✗"; }
+    } else {
+      if (i === sel) cls += " sel";
+    }
+    const btn = document.createElement("button");
+    btn.className = cls;
+    btn.disabled = confirmed;
+    btn.innerHTML = `<div class="opt-dot">${dot}</div><span class="opt-text">${opt}</span>`;
+    if (!confirmed) btn.onclick = () => selectOption(i);
+    optEl.appendChild(btn);
+  });
+
+  // explanation
+  const expl = document.getElementById("expl");
+  if (confirmed) {
+    const isOk = sel === q.correct;
+    expl.className = "expl visible " + (isOk ? "ok" : "bad");
+    document.getElementById("expl-title").innerHTML = isOk
+      ? "<span>✅</span><span>¡Correcto!</span>"
+      : "<span>❌</span><span>Respuesta incorrecta</span>";
+    document.getElementById("expl-body").textContent = q.explanation;
+  } else {
+    expl.className = "expl";
+  }
+
+  // actions
+  const confirmBtn = document.getElementById("confirm-btn");
+  const nextBtn = document.getElementById("next-btn");
+  confirmBtn.style.display = confirmed ? "none" : "flex";
+  confirmBtn.disabled = (sel === null);
+  nextBtn.style.display = confirmed ? "flex" : "none";
+  nextBtn.style.background = q.color;
+  nextBtn.textContent = cur + 1 < QUESTIONS.length ? "Siguiente pregunta →" : "Ver resultados →";
+
+  // dots
+  renderDots(q.color);
+}
+
+function renderDots(qColor) {
+  const dotsEl = document.getElementById("dots");
+  dotsEl.innerHTML = "";
+  QUESTIONS.forEach((_, i) => {
+    const a = answers[i];
+    const div = document.createElement("div");
+    div.className = "dot " + (i === cur ? "cur" : a ? (a.ok ? "right" : "wrong") : "pend");
+    if (i === cur) div.style.background = qColor;
+    dotsEl.appendChild(div);
+  });
+}
+
+// ── INTERACTIONS ──────────────────────────────────────────────────
+function selectOption(i) {
+  if (confirmed) return;
+  sel = i;
+  hintVisible = false;
+  renderQuestion();
+}
+
+function showHint() {
+  hintVisible = true;
+  document.getElementById("hint-btn").style.display = "none";
+  document.getElementById("hint-box").classList.add("visible");
+}
+
+function doConfirm() {
+  if (sel === null) return;
+  confirmed = true;
+  answers.push({ id: QUESTIONS[cur].id, sel, ok: sel === QUESTIONS[cur].correct });
+
+  // update progress bar
+  const pct = Math.round(((cur + 1) / QUESTIONS.length) * 100);
+  const fill = document.getElementById("progress-fill");
+  fill.style.width = pct + "%";
+
+  renderQuestion();
+}
+
+function doNext() {
+  const body = document.getElementById("q-body");
+  body.classList.add("fading");
+  setTimeout(() => {
+    if (cur + 1 >= QUESTIONS.length) {
+      stopTimer();
+      showResults();
+    } else {
+      cur++;
+      sel = null;
+      confirmed = false;
+      hintVisible = false;
+      renderQuestion();
+    }
+    body.classList.remove("fading");
+  }, 220);
+}
+
+// ── TIMER ─────────────────────────────────────────────────────────
+function startTimer() {
+  timerSecs = 0;
+  timerInterval = setInterval(() => {
+    timerSecs++;
+    document.getElementById("q-timer").textContent = fmtTime(timerSecs);
+  }, 1000);
+}
+function stopTimer() { clearInterval(timerInterval); }
+
+// ── START ─────────────────────────────────────────────────────────
+function startQuiz() {
+  cur = 0; sel = null; confirmed = false;
+  answers = []; hintVisible = false;
+  showScreen("quiz");
+  startTimer();
+  renderQuestion();
+}
+
+// ── RESULTS ───────────────────────────────────────────────────────
+function showResults() {
+  const score = answers.filter(a => a.ok).length;
+  const grade = getGrade(score);
+
+  // top section
+  const resTop = document.getElementById("res-top");
+  resTop.style.setProperty("--gc", grade.color);
+  const ring = document.getElementById("score-ring");
+  ring.style.setProperty("--gc", grade.color);
+  ring.style.borderColor = grade.color;
+  document.getElementById("score-n").textContent = score;
+  document.getElementById("grade-label").textContent = grade.label;
+  document.getElementById("grade-label").style.color = grade.color;
+  document.getElementById("grade-sub").textContent = grade.sub;
+
+  // stats
+  document.getElementById("stat-correct").textContent = score;
+  document.getElementById("stat-wrong").textContent = 6 - score;
+  document.getElementById("stat-time").textContent = fmtTime(timerSecs);
+
+  // review
+  const list = document.getElementById("review-list");
+  list.innerHTML = "";
+  QUESTIONS.forEach((q, i) => {
+    const a = answers[i];
+    const ok = a && a.ok;
+    const div = document.createElement("div");
+    div.className = "review-item " + (ok ? "ok" : "bad");
+    const shortQ = q.question.split("\n")[0].slice(0, 80) + (q.question.length > 80 ? "…" : "");
+    const ansText = ok
+      ? `Correcto: ${q.options[q.correct].slice(0,70)}…`
+      : `Tu respuesta: ${q.options[a?.sel]?.slice(0,45)}…  ·  Correcta: ${q.options[q.correct].slice(0,45)}…`;
+    div.innerHTML = `
+      <div class="review-icon">${ok ? "✓" : "✗"}</div>
+      <div>
+        <div class="review-q"><strong>P${q.id}.</strong> ${shortQ}</div>
+        <div class="review-a">${ansText}</div>
+      </div>`;
+    list.appendChild(div);
+  });
+
+  showScreen("results");
+}
+
+// ── RESTART ───────────────────────────────────────────────────────
+function doRestart() {
+  cur = 0; sel = null; confirmed = false;
+  answers = []; hintVisible = false; timerSecs = 0;
+  showScreen("intro");
+}
+</script>
+</body>
+</html>
