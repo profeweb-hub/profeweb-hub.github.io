@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test COCOMO · Gestión de Proyectos</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0f1e3c;
+    --blue: #1d4ed8;
+    --sky: #3b82f6;
+    --accent: #f59e0b;
+    --green: #10b981;
+    --red: #ef4444;
+    --cream: #faf8f4;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --card: #ffffff;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--cream);
+    min-height: 100vh;
+    color: var(--navy);
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  .site-header {
+    background: var(--navy);
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .site-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      repeating-linear-gradient(90deg, rgba(255,255,255,.03) 0px, rgba(255,255,255,.03) 1px, transparent 1px, transparent 60px),
+      repeating-linear-gradient(0deg,  rgba(255,255,255,.03) 0px, rgba(255,255,255,.03) 1px, transparent 1px, transparent 60px);
+  }
+  .header-inner {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 52px 24px 44px;
+    position: relative;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(245,158,11,.15);
+    border: 1px solid rgba(245,158,11,.35);
+    color: var(--accent);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: .08em;
+    padding: 5px 12px;
+    border-radius: 100px;
+    margin-bottom: 18px;
+  }
+  .badge::before { content: '◆'; font-size: 8px; }
+  h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2rem, 5vw, 3rem);
+    color: #fff;
+    line-height: 1.15;
+    margin-bottom: 12px;
+  }
+  h1 em {
+    font-style: normal;
+    color: var(--accent);
+  }
+  .header-meta {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+  }
+  .meta-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: rgba(255,255,255,.6);
+  }
+  .meta-chip svg { opacity: .7; }
+  .progress-bar-wrap {
+    margin-top: 28px;
+    height: 4px;
+    background: rgba(255,255,255,.1);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--sky), var(--accent));
+    border-radius: 2px;
+    width: 0%;
+    transition: width .5s cubic-bezier(.4,0,.2,1);
+  }
+
+  /* ── MAIN ── */
+  main {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  /* ── QUESTION CARD ── */
+  .question-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 20px;
+    position: relative;
+    opacity: 0;
+    transform: translateY(24px);
+    animation: slideIn .45s cubic-bezier(.4,0,.2,1) forwards;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.04);
+  }
+  .question-card:nth-child(1) { animation-delay: .05s }
+  .question-card:nth-child(2) { animation-delay: .12s }
+  .question-card:nth-child(3) { animation-delay: .19s }
+  .question-card:nth-child(4) { animation-delay: .26s }
+  .question-card:nth-child(5) { animation-delay: .33s }
+
+  @keyframes slideIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .q-number {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--sky);
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .q-text {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.55;
+    color: var(--navy);
+    margin-bottom: 22px;
+  }
+
+  /* ── OPTIONS ── */
+  .options { display: flex; flex-direction: column; gap: 10px; }
+
+  .option-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all .18s ease;
+    position: relative;
+    user-select: none;
+    background: var(--cream);
+  }
+  .option-label:hover:not(.locked) {
+    border-color: var(--sky);
+    background: #eff6ff;
+    transform: translateX(3px);
+  }
+
+  .option-label input[type="radio"] { display: none; }
+
+  .option-bullet {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    transition: all .18s ease;
+    margin-top: 1px;
+  }
+  .option-label:hover:not(.locked) .option-bullet {
+    border-color: var(--sky);
+    color: var(--sky);
+  }
+  .option-text {
+    font-size: 14.5px;
+    line-height: 1.5;
+    color: #334155;
+    padding-top: 3px;
+  }
+
+  /* ── SELECTED ── */
+  .option-label.selected {
+    border-color: var(--blue);
+    background: #eff6ff;
+  }
+  .option-label.selected .option-bullet {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: #fff;
+  }
+
+  /* ── CORRECT / WRONG ── */
+  .option-label.correct {
+    border-color: var(--green) !important;
+    background: #f0fdf4 !important;
+  }
+  .option-label.correct .option-bullet {
+    background: var(--green) !important;
+    border-color: var(--green) !important;
+    color: #fff !important;
+  }
+  .option-label.wrong {
+    border-color: var(--red) !important;
+    background: #fef2f2 !important;
+  }
+  .option-label.wrong .option-bullet {
+    background: var(--red) !important;
+    border-color: var(--red) !important;
+    color: #fff !important;
+  }
+  .option-label.locked { cursor: default; }
+  .option-label.locked:not(.correct):not(.wrong) {
+    opacity: .65;
+  }
+
+  /* ── FEEDBACK ── */
+  .feedback {
+    display: none;
+    margin-top: 16px;
+    padding: 13px 16px;
+    border-radius: 9px;
+    font-size: 13.5px;
+    line-height: 1.55;
+    font-weight: 500;
+  }
+  .feedback.show { display: flex; gap: 9px; align-items: flex-start; }
+  .feedback.ok  { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+  .feedback.ko  { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+  .feedback-icon { font-size: 16px; margin-top: 1px; }
+
+  /* ── SUBMIT BUTTON ── */
+  .submit-wrap { text-align: center; margin-top: 36px; }
+  .btn-submit {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--navy);
+    color: #fff;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    padding: 16px 40px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    letter-spacing: .02em;
+    transition: all .2s ease;
+    box-shadow: 0 4px 20px rgba(15,30,60,.25);
+  }
+  .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(15,30,60,.3); background: #1a2f5a; }
+  .btn-submit:active { transform: translateY(0); }
+  .btn-submit:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+
+  /* ── RESULT PANEL ── */
+  #result-panel {
+    display: none;
+    background: var(--navy);
+    border-radius: 20px;
+    padding: 44px 36px;
+    text-align: center;
+    margin-top: 32px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+    animation: slideIn .4s ease forwards;
+  }
+  #result-panel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 70% 30%, rgba(59,130,246,.25), transparent 60%);
+    pointer-events: none;
+  }
+  .result-score {
+    font-family: 'DM Serif Display', serif;
+    font-size: 72px;
+    line-height: 1;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .result-label {
+    font-size: 13px;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: .12em;
+    color: rgba(255,255,255,.5);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .result-msg {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #fff;
+  }
+  .result-sub {
+    font-size: 14px;
+    color: rgba(255,255,255,.55);
+    margin-bottom: 28px;
+    max-width: 420px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
+  }
+  .btn-retry {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent);
+    color: var(--navy);
+    font-weight: 700;
+    font-size: 14px;
+    padding: 13px 30px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all .18s ease;
+  }
+  .btn-retry:hover { background: #fbbf24; transform: translateY(-1px); }
+
+  /* ── SCORE BAR ── */
+  .score-bars {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin: 20px 0 28px;
+  }
+  .score-pip {
+    width: 40px;
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(255,255,255,.15);
+    transition: background .3s ease;
+  }
+  .score-pip.filled { background: var(--green); }
+  .score-pip.wrong  { background: var(--red); }
+
+  /* ── DOCENTE FOOTER ── */
+  footer {
+    text-align: center;
+    padding: 28px 24px 40px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 13px;
+  }
+  footer a { color: var(--sky); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+  .footer-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 12.5px;
+    color: var(--navy);
+    font-weight: 500;
+    margin-bottom: 10px;
+  }
+
+  @media (max-width: 600px) {
+    .question-card { padding: 22px 18px; }
+    .option-label { padding: 12px 13px; }
+    #result-panel { padding: 32px 20px; }
+    .result-score { font-size: 56px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="badge">COCOMO · Gestión de Proyectos de Software</div>
+    <h1>Test de <em>Estimación</em><br>con COCOMO</h1>
+    <div class="header-meta">
+      <span class="meta-chip">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        5 preguntas
+      </span>
+      <span class="meta-chip">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        Tipo test · respuesta única
+      </span>
+      <span class="meta-chip">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        Feedback inmediato
+      </span>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="prog-fill"></div>
+    </div>
+  </div>
+</header>
+
+<main id="quiz-form">
+
+  <!-- Q1 -->
+  <div class="question-card" data-q="1" data-correct="b">
+    <div class="q-number">Pregunta 01 / 05</div>
+    <p class="q-text">¿Qué significan las siglas <strong>COCOMO</strong>?</p>
+    <div class="options">
+      <label class="option-label">
+        <input type="radio" name="q1" value="a">
+        <span class="option-bullet">A</span>
+        <span class="option-text">Collaborative Code Model</span>
+      </label>
+      <label class="option-label">
+        <input type="radio" name="q1" value="b">
+        <span class="option-bullet">B</span>
+        <span class="option-text">Constructive Cost Model</span>
+      </label>
+      <label class="option-label">
+        <input type="radio" name="q1" value="c">
+        <span class="option-bullet">C</span>
+        <span class="option-text">Computed Configuration Model</span>
+      </label>
+      <label class="option-label">
+        <input type="radio" name="q1" value="d">
+        <span class="option-bullet">D</span>
+        <span class="option-text">Continuous Complexity Optimization Method</span>
+      </label>
+    </div>
+    <div class="feedback ok"><span class="feedback-icon">✅</span><span>Correcto. COCOMO significa <strong>Constructive Cost Model</strong>, creado por Barry Boehm en 1981 para estimar esfuerzo, duración y equipo en proyectos de software.</span></div>
+    <div class="feedback ko"><span class="feedback-icon">❌</span><span>Incorrecto. La respuesta correcta es <strong>Constructive Cost Model</strong> (Modelo de Costo Constructivo), propuesto por Barry Boehm en 1981.</span></div>
+  </div>
+
+  <!-- Q2 -->
+  <div class="question-card" data-q="2" data-correct="c">
+    <div class="q-number">Pregunta 02 / 05</div>
+    <p class="q-text">Una tienda online tiene las siguientes funcionalidades estimadas: Login (0.5 K), CRUD productos (1.5 K), Carrito (2 K), Pasarela de pago (3 K) y Reportes (3 K). ¿Cuántos <strong>KLOC</strong> tiene el proyecto en total?</p>
+    <div class="options">
+      <label class="option-label">
+        <input type="radio" name="q2" value="a">
+        <span class="option-bullet">A</span>
+        <span class="option-text">8 KLOC</span>
+      </label>
+      <label class="option-label">
+        <input type="radio" name="q2" value="b">
+        <span class="option-bullet">B</span>
+        <span class="option-text">9 KLOC</span>
+      </label>
+      <label class="option-label">
+        <input type="radio" name="q2" value="c">
+        <span class="option-bullet">C</span>
+        <span class="option-text">10 KLOC</span>
+      </label>
+      <label class="option-label">
+        <input type="radio" name="q2" value="d">
+        <span class="option-bullet">D</span>
+        <span class="option-text">12 KLOC</span>
+      </label>
+    </div>
+    <div class="feedback ok"><span class="feedback-icon">✅</span><span>Correcto. 0.5 + 1.5 + 2 + 3 + 3 = <strong>10 KLOC</strong>. Siempre suma el KLOC de cada módulo para obtener el tamaño total del proyecto.</span></div>
+    <div class="feedback ko"><span class="feedback-icon">❌</span><span>Incorrecto. La suma correcta es: 0.5 + 1.5 + 2 + 3 + 3 = <strong>10 KLOC</strong>. Revisa que no te hayas saltado ningún módulo.</span></div>
+  </div>
+
+  <!-- Q3 -->
+  <div class="question-card" data-q="3" data-correct="a">
+    <div class="q-number">Pregunta 03 / 05</div>
+    <p class="q-text">Dado un proyecto <strong>Orgánico</strong> de 10 KLOC, usando la fórmula <code>E = 2.4 × (KLOC)^1.05</code>, ¿cuál es el esfuerzo aproximado en <strong>Personas-Mes</strong>?</p>
+    <div class="options">
+      <label class="option-label">
+        <input type="radio" name="q3" value="a">
+        <span class="option-bullet">A</span>
+        <span class="option-text">≈ 26.9 Personas-Mes</span>
+      </label>
+      <label class="option-label">
+        <input type="radio" name="q3" value="b">
+        <span class="option-bullet">B</span>
+        <span class="option-text">≈ 24.0 Personas-Mes</span>
+      </label>
+      <label class="option-label">
+        <input type="radio" name="q3" value="c">
+        <span class="option-bullet">C</span>
+        <span class="option-text">≈ 36.0 Personas-Mes</span>
+      </label>
+      <label class="option-label">
+        <input type="radio" name="q3" value="d">
+        <span class="option-bullet">D</span>
+        <span class="option-text">≈ 10.5 Personas-Mes</span>
+      </label>
+    </div>
+    <div class="feedback ok"><span class="feedback-icon">✅</span><span>Correcto. E = 2.4 × (10)^1.05 = 2.4 × 11.22 ≈ <strong>26.9 PM</strong>. Recuerda: Personas-Mes mide esfuerzo total, no duración.</span></div>
+    <div class="feedback ko"><span class="feedback-icon">❌</span><span>Incorrecto. El cálculo es: E = 2.4 × (10)^1.05 = 2.4 × 11.22 ≈ <strong>26.9 Personas-Mes</strong>. No confundas (KLOC)^b con KLOC × b.</span></div>
+  </div>
+
+  <!-- Q4 -->
+  <div class="question-card" data-q="4" data-correct="d">
+    <div class="q-number">Pregunta 04 / 05</div>
+    <p class="q-text">¿Cuál de los siguientes tipos de proyecto COCOMO se recomienda para una <strong>startup con equipo pequeño</strong>, dominio conocido y menos de 50 KLOC?</p>
+    <div class="options">
+      <label class="option-label">
+        <input type="radio" name="q4" value="a">
+        <span class="option-bullet">A</span>
+        <span class="option-text">Empotrado, porque tiene las constantes más altas y es más preciso</span>
+      </label>
+      <label class="option-label">
+        <input type="radio" name="q4" value="b">
+        <span class="option-bullet">B</span>
+        <span class="option-text">Semi-acoplado, porque es el término medio y siempre es seguro</span>
+      </label>
+      <label class="option-label">
+        <input type="radio" name="q4" value="c">
+        <span class="option-bullet">C</span>
+        <span class="option-text">Empotrado, porque los sistemas web modernos son siempre complejos</span>
+      </label>
+      <label class="option-label">
+        <input type="radio" name="q4" value="d">
+        <span class="option-bullet">D</span>
+        <span class="option-text">Orgánico, porque encaja con equipos pequeños y proyectos de bajo acoplamiento</span>
+      </label>
+    </div>
+    <div class="feedback ok"><span class="feedback-icon">✅</span><span>Correcto. El modo <strong>Orgánico</strong> (a=2.4, b=1.05) es el más adecuado para equipos pequeños con experiencia en el dominio y proyectos de menos de 50 KLOC.</span></div>
+    <div class="feedback ko"><span class="feedback-icon">❌</span><span>Incorrecto. La respuesta es <strong>Orgánico</strong>. El tipo Empotrado se reserva para sistemas con restricciones muy estrictas (hardware, tiempo real). Semi-acoplado es para equipos mixtos con más experiencia.</span></div>
+  </div>
+
+  <!-- Q5 -->
+  <div class="question-card" data-q="5" data-correct="b">
+    <div class="q-number">Pregunta 05 / 05</div>
+    <p class="q-text">Si un proyecto tiene un esfuerzo E = 26.9 Personas-Mes y una duración D = 9.7 meses, ¿cuántas <strong>personas</strong> necesita el equipo (aproximadamente)?</p>
+    <div class="options">
+      <label class="option-label">
+        <input type="radio" name="q5" value="a">
+        <span class="option-bullet">A</span>
+        <span class="option-text">≈ 9 personas, porque la duración en meses determina el equipo</span>
+      </label>
+      <label class="option-label">
+        <input type="radio" name="q5" value="b">
+        <span class="option-bullet">B</span>
+        <span class="option-text">≈ 3 personas, resultado de dividir E ÷ D = 26.9 ÷ 9.7</span>
+      </label>
+      <label class="option-label">
+        <input type="radio" name="q5" value="c">
+        <span class="option-bullet">C</span>
+        <span class="option-text">≈ 27 personas, porque el esfuerzo en PM equivale directamente al equipo</span>
+      </label>
+      <label class="option-label">
+        <input type="radio" name="q5" value="d">
+        <span class="option-bullet">D</span>
+        <span class="option-text">≈ 1 persona, porque COCOMO asume equipos mínimos</span>
+      </label>
+    </div>
+    <div class="feedback ok"><span class="feedback-icon">✅</span><span>Correcto. Personas = E ÷ D = 26.9 ÷ 9.7 ≈ <strong>2.8 → 3 personas</strong>. Este es el tamaño de equipo ideal para completar el proyecto en el tiempo estimado.</span></div>
+    <div class="feedback ko"><span class="feedback-icon">❌</span><span>Incorrecto. La fórmula es <strong>Personas = E ÷ D</strong> = 26.9 ÷ 9.7 ≈ 3 personas. No confundas el esfuerzo total con el número de personas simultáneas.</span></div>
+  </div>
+
+  <div class="submit-wrap">
+    <button class="btn-submit" id="btn-submit" onclick="submitQuiz()">
+      <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      Enviar respuestas
+    </button>
+  </div>
+
+  <div id="result-panel">
+    <div class="result-score" id="res-score"></div>
+    <div class="result-label">puntuación final</div>
+    <div class="score-bars" id="score-bars"></div>
+    <div class="result-msg" id="res-msg"></div>
+    <div class="result-sub" id="res-sub"></div>
+    <button class="btn-retry" onclick="resetQuiz()">
+      <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+      Intentar de nuevo
+    </button>
+  </div>
+
+</main>
+
+<footer>
+  <div>
+    <span class="footer-tag">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Docente: D. Ramirez-Escobar
+    </span>
+  </div>
+  <p>Contacto: <a href="mailto:profeweb.hub@gmail.com">profeweb.hub@gmail.com</a> · Gestión de Proyectos de Software</p>
+</footer>
+
+<script>
+  const TOTAL = 5;
+  let answered = 0;
+
+  // Selección de opciones
+  document.querySelectorAll('.option-label').forEach(label => {
+    label.addEventListener('click', function () {
+      const card = this.closest('.question-card');
+      if (card.classList.contains('answered')) return;
+      card.querySelectorAll('.option-label').forEach(l => l.classList.remove('selected'));
+      this.classList.add('selected');
+      this.querySelector('input').checked = true;
+    });
+  });
+
+  function updateProgress() {
+    document.getElementById('prog-fill').style.width = (answered / TOTAL * 100) + '%';
+  }
+
+  function submitQuiz() {
+    const cards = document.querySelectorAll('.question-card');
+    let score = 0;
+    const results = [];
+
+    cards.forEach(card => {
+      const q = card.dataset.q;
+      const correct = card.dataset.correct;
+      const selected = card.querySelector(`input[name="q${q}"]:checked`);
+
+      if (!selected) return; // skip unanswered
+
+      const value = selected.value;
+      const isCorrect = value === correct;
+      if (isCorrect) score++;
+      results.push(isCorrect);
+
+      card.querySelectorAll('.option-label').forEach(label => {
+        label.classList.add('locked');
+        const val = label.querySelector('input').value;
+        if (val === correct) label.classList.add('correct');
+        else if (val === value && !isCorrect) label.classList.add('wrong');
+      });
+
+      // Show feedback
+      card.querySelectorAll('.feedback').forEach(fb => fb.classList.remove('show'));
+      const fb = isCorrect
+        ? card.querySelectorAll('.feedback.ok')[0]
+        : card.querySelectorAll('.feedback.ko')[0];
+      fb.classList.add('show');
+
+      card.classList.add('answered');
+      answered++;
+    });
+
+    answered = TOTAL;
+    updateProgress();
+    document.getElementById('btn-submit').disabled = true;
+
+    // Score bars
+    const bars = document.getElementById('score-bars');
+    bars.innerHTML = results.map(r =>
+      `<div class="score-pip ${r ? 'filled' : 'wrong'}"></div>`
+    ).join('');
+
+    // Result messages
+    const msgs = [
+      { min: 0, max: 1, msg: "Sigue practicando 💪", sub: "Repasa el material sobre COCOMO y vuelve a intentarlo. ¡Cada intento cuenta!" },
+      { min: 2, max: 3, msg: "Vas por buen camino 📈", sub: "Tienes las bases. Revisa las fórmulas y los tipos de proyecto para afinar tu comprensión." },
+      { min: 4, max: 4, msg: "¡Muy bien hecho! 🎯", sub: "Casi perfecto. Revisa el enunciado que fallaste y lo tendrás dominado." },
+      { min: 5, max: 5, msg: "¡Perfecto! Dominas COCOMO 🏆", sub: "Todas correctas. Estás listo para aplicar COCOMO en proyectos reales." },
+    ];
+    const m = msgs.find(x => score >= x.min && score <= x.max);
+    document.getElementById('res-score').textContent = `${score}/${TOTAL}`;
+    document.getElementById('res-msg').textContent = m.msg;
+    document.getElementById('res-sub').textContent = m.sub;
+
+    const panel = document.getElementById('result-panel');
+    panel.style.display = 'block';
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function resetQuiz() {
+    document.querySelectorAll('.question-card').forEach(card => {
+      card.classList.remove('answered');
+      card.querySelectorAll('.option-label').forEach(l => {
+        l.classList.remove('selected', 'correct', 'wrong', 'locked');
+        l.querySelector('input').checked = false;
+      });
+      card.querySelectorAll('.feedback').forEach(fb => fb.classList.remove('show'));
+    });
+    answered = 0;
+    updateProgress();
+    document.getElementById('btn-submit').disabled = false;
+    document.getElementById('result-panel').style.display = 'none';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+</body>
+</html>
