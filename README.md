@@ -1,6 +1,10 @@
 # METODOLOGIA-GESTION-PROYECTOS-WEB
-**Docente:Daysi Ramirez-Escobar**
+
 ACTIVIDADES CURSO ADGG086PO
+
+**Docente:Daysi Ramirez-Escobar**
+**Fecha: Marzo 2026**
+
 # 📘 ADGG086PO — Metodología y Gestión de Proyectos de Ingenierías Software para la Web
 
 
